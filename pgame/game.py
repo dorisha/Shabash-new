@@ -550,6 +550,7 @@ if __name__ == '__main__':
                             if event.type == pygame.QUIT:
                                 running = False
                                 pygame.mixer.music.stop()
+                                COUNT = 0
                         # Получаем нажатые клавиши
                         keys = pygame.key.get_pressed()
                         if keys[pygame.K_LEFT]:
@@ -599,7 +600,6 @@ if __name__ == '__main__':
                                     goomba.kill()
                                     player_animation.speed_y = -JUMP_HEIGHT // 2  # Отскок вверх
                                     COUNT += 1
-                                    print(COUNT)
                                 else:
                                     pygame.mixer_music.stop()
                                     player_animation.kill()
