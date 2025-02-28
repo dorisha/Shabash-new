@@ -1,5 +1,4 @@
 import random
-
 import pygame
 import sys
 import os
@@ -208,16 +207,14 @@ class Danger1(pygame.sprite.Sprite):
         self.player_out = True
         direction = random.randint(0, 1)
         if direction == 0:
-            # Справа внизу
             self.rect.x = width - self.rect.width
             self.rect.y = (height - self.rect.height) + 33
-            self.speed_x = -self.speed_x  # Двигаемся влево
+            self.speed_x = -self.speed_x
             self.facing_left = False
         else:
-            # Слева внизу
             self.rect.x = 0
             self.rect.y = (height - self.rect.height) + 33
-            self.speed_x = self.speed_x  # Двигаемся вправо
+            self.speed_x = self.speed_x
             self.facing_left = True
         self.frame_timer = 0
         self.danger_life = True
@@ -260,16 +257,14 @@ class Danger2(pygame.sprite.Sprite):
         self.player_out = True
         direction = random.randint(0, 1)
         if direction == 0:
-            # Справа внизу
             self.rect.x = width - self.rect.width
             self.rect.y = height - self.rect.height
-            self.speed_x = -self.speed_x  # Двигаемся влево
+            self.speed_x = -self.speed_x
             self.facing_left = False
         else:
-            # Слева внизу
             self.rect.x = 0
             self.rect.y = height - self.rect.height
-            self.speed_x = self.speed_x  # Двигаемся вправо
+            self.speed_x = self.speed_x
             self.facing_left = True
         self.frame_timer = 0
         self.danger_life = True
@@ -386,6 +381,7 @@ def choosing():
     with open('data/Pinki.txt', 'r', encoding='utf-8') as t:
         intro_text = t.readlines()
         intro_text = [ll[:-1] for ll in intro_text[:-1]] + [intro_text[-1]]
+    clock = pygame.time.Clock()
     while running_ch:
         text_surface_ch = font_name.render(text, True, (80, 0, 100))
         name_rect = (140, 310)
@@ -488,8 +484,7 @@ def choosing():
                         intro_text = t.readlines()
                         intro_text = [ll[:-1] for ll in intro_text[:-1]] + [intro_text[-1]]
                     new_spisok = pygame.sprite.Group()
-                    new = DangerShow(load_image_no("Skeleton_01_Yellow_Walk (1).png"), 10, 1, scale_factor=4,
-                                     frame_rate=4)
+                    new = DangerShow(load_image_no("Skeleton_01_Yellow_Walk (1).png"), 10, 1, scale_factor=4, frame_rate=4)
                     new_spisok.add(new)
                     new_danger_spisok = new_spisok
                 elif 700 <= mouse_x_ch <= 750 and 320 <= mouse_y_ch <= 370:
@@ -508,10 +503,9 @@ def choosing():
         all_sprites_ch.update()
         pygame.display.flip()
         clock.tick(FPS)
-
+    pygame.display.set_mode(SIZE)
 
 if __name__ == '__main__':
-    # Уменьшаем размер и скорость анимации
     text_surface = font.render('Shabash', True, (255, 255, 255))
     clock = pygame.time.Clock()
     BackGround_m = Background('data/стратовый фон.jpg')
@@ -527,14 +521,16 @@ if __name__ == '__main__':
                 running_m = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
+                # Если запускаем игру из главного меню
                 if 230 <= mouse_x <= 450 and 400 <= mouse_y <= 480:
                     choosing()
-                    screen = pygame.display.set_mode(SIZE)
-                if play_but[0] <= mouse_x <= play_but[0] + play_but[2] and play_but[1] <= mouse_y <= play_but[3] + \
-                        play_but[1]:
+                if play_but[0] <= mouse_x <= play_but[0] + play_but[2] and \
+                   play_but[1] <= mouse_y <= play_but[1] + play_but[3]:
+                    # Загружаем и запускаем музыку так же, как в заставке:
+                    pygame.mixer.music.load('music/laxity-crosswords-by-seraphic-music.mp3')
+                    pygame.mixer.music.play(-1)
                     BackGround = Background('data/фон.png')
                     grass = Background('data/трава.png')
-                    # Загрузка спрайт-листа для анимации
                     player_animation = Player(load_image_no(HERO), 6, 1, scale_factor=1.8, frame_rate=7)
                     all_sprites = pygame.sprite.Group()
                     player_sprite = pygame.sprite.Group()
@@ -551,21 +547,46 @@ if __name__ == '__main__':
                                 running = False
                                 pygame.mixer.music.stop()
                                 COUNT = 0
-                        # Получаем нажатые клавиши
+                            # Если игрок мёртв, обрабатываем нажатие пробела или клика по кнопке play:
+                            if player_animation.player_out:
+                                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                                    COUNT = 0
+                                    pygame.mixer.music.load('music/laxity-crosswords-by-seraphic-music.mp3')
+                                    pygame.mixer.music.play(-1)
+                                    player_animation = Player(load_image_no(HERO), 6, 1, scale_factor=1.8, frame_rate=7)
+                                    player_sprite.empty()
+                                    danger_sprite.empty()
+                                    player_sprite.add(player_animation)
+                                    player_animation.player_out = False
+                                    last_spawn_time = pygame.time.get_ticks()
+                                if event.type == pygame.MOUSEBUTTONDOWN:
+                                    mouse_x_in, mouse_y_in = event.pos
+                                    if (play_but[0] <= mouse_x_in <= play_but[0] + play_but[2] and
+                                        play_but[1] <= mouse_y_in <= play_but[1] + play_but[3]):
+                                        COUNT = 0
+                                        pygame.mixer.music.load('music/laxity-crosswords-by-seraphic-music.mp3')
+                                        pygame.mixer.music.play(-1)
+                                        player_animation = Player(load_image_no(HERO), 6, 1, scale_factor=1.8, frame_rate=7)
+                                        player_sprite.empty()
+                                        danger_sprite.empty()
+                                        player_sprite.add(player_animation)
+                                        player_animation.player_out = False
+                                        last_spawn_time = pygame.time.get_ticks()
                         keys = pygame.key.get_pressed()
-                        if keys[pygame.K_LEFT]:
-                            player_animation.move(-PLAYER_SPEED)  # движение влево
-                            player_animation.facing_left = True  # Устанавливаем флаг для зеркалирования
-                            player_animation.is_moving = True  # Устанавливаем флаг движения
-                        elif keys[pygame.K_RIGHT]:
-                            player_animation.move(PLAYER_SPEED)  # движение вправо
-                            player_animation.facing_left = False  # Сбрасываем флаг зеркалирования
-                            player_animation.is_moving = True  # Устанавливаем флаг движения
-                        else:
-                            player_animation.is_moving = False  # Персонаж стоит, прекращаем анимацию
+                        if not player_animation.player_out:
+                            if keys[pygame.K_LEFT]:
+                                player_animation.move(-PLAYER_SPEED)
+                                player_animation.facing_left = True
+                                player_animation.is_moving = True
+                            elif keys[pygame.K_RIGHT]:
+                                player_animation.move(PLAYER_SPEED)
+                                player_animation.facing_left = False
+                                player_animation.is_moving = True
+                            else:
+                                player_animation.is_moving = False
 
-                        if keys[pygame.K_UP]:
-                            player_animation.jump()  # прыжок
+                            if keys[pygame.K_UP]:
+                                player_animation.jump()
 
                         now = pygame.time.get_ticks()
                         if now - last_spawn_time > INIT_DELAY:
@@ -590,36 +611,43 @@ if __name__ == '__main__':
                         score_text = font_but.render((str(COUNT)), True, (255, 255, 255))
                         score_rect = score_text.get_rect()
 
-                        player_animation.update()
-                        danger_sprite.update()
+                        if not player_animation.player_out:
+                            player_animation.update()
+                            danger_sprite.update()
 
-                        for goomba in danger_sprite:
-                            if player_animation.rect.colliderect(goomba.rect):
-                                if player_animation.rect.bottom - player_animation.speed_y < goomba.rect.top:
-                                    count_sound.play()
-                                    goomba.kill()
-                                    player_animation.speed_y = -JUMP_HEIGHT // 2  # Отскок вверх
-                                    COUNT += 1
-                                else:
-                                    pygame.mixer_music.stop()
-                                    player_animation.kill()
-                                    if not player_animation.player_out:
-                                        die_sound.play(0)
-                                    player_animation.player_out = True
-                        if player_animation.player_out:
-                            image = load_image_no('смерть.jpg')
-                            image = pygame.transform.scale(image, (800, 800))
-                            screen.blit(image, (0, 0))
-                            score_rect.midbottom = (width // 2, height // 2)
+                            for goomba in danger_sprite:
+                                if player_animation.rect.colliderect(goomba.rect):
+                                    if player_animation.rect.bottom - player_animation.speed_y < goomba.rect.top:
+                                        count_sound.play()
+                                        goomba.kill()
+                                        player_animation.speed_y = -JUMP_HEIGHT // 2
+                                        COUNT += 1
+                                    else:
+                                        pygame.mixer.music.stop()
+                                        player_animation.kill()
+                                        if not player_animation.player_out:
+                                            die_sound.play(0)
+                                        player_animation.player_out = True
+
+                            player_sprite.draw(screen)
+                            danger_sprite.draw(screen)
+                            score_rect.midtop = (width // 2, 5)
+                            screen.blit(score_text, score_rect)
+                        else:
+                            death_image = load_image_no('смерть.jpg')
+                            death_image = pygame.transform.scale(death_image, (800, 800))
+                            screen.blit(death_image, (0, 0))
+                            retry_rect.midbottom = (width // 2, height // 2)
                             screen.blit(retry_text, retry_rect)
+                            # image_play = load_image_no('кнопка главная.png')
+                            # image_play = pygame.transform.scale(image_play, (play_but[2], play_but[3]))
+                            # text_surf = font_but.render("play", True, 'white')
+                            # screen.blit(image_play, (play_but[0], play_but[1]))
+                            # screen.blit(text_surf, (play_but[0] + 50, play_but[1] + 20))
 
-                        #     # Обновление состояния игрок
-                        score_rect.midtop = (width // 2, 5)
-                        player_sprite.draw(screen)
-                        danger_sprite.draw(screen)
-                        screen.blit(score_text, score_rect)
                         pygame.display.flip()
-        screen.blit(text_surface, (190, 580))  # Обновление дисплея
+                        clock.tick(FPS)
+        screen.blit(text_surface, (190, 580))
         image_play = load_image_no('кнопка главная.png')
         image_ch = load_image_no('кнопка главная.png')
         image_play = pygame.transform.scale(image_play, (play_but[2], play_but[3]))
@@ -632,5 +660,4 @@ if __name__ == '__main__':
         screen.blit(text_ch, (275, 425))
         pygame.display.flip()
         clock.tick(FPS)
-
     pygame.quit()
